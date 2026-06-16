@@ -401,7 +401,7 @@ const receive_shared_audio = async request => {
 }
 ```
 
-`MAX_AUDIO_FILE_BYTES` is the v1 `100 MB` limit. `is_probable_audio_file()` must be lenient: accept known audio MIME types, known audio extensions, and generic or empty MIME metadata when the filename extension is accepted. WhatsApp and Android share metadata can be incomplete, so do not reject `.ogg`, `.opus`, `.oga`, `.amr`, `.m4a`, `.aac`, `.mp3`, `.wav`, `.webm`, or `.3gp` files only because `file.type` is empty or `application/octet-stream`.
+`MAX_AUDIO_FILE_BYTES` is the v1 `100 MB` limit. `is_probable_audio_file()` must be lenient: accept known audio MIME types, known audio extensions, and generic or empty MIME metadata when the filename extension is accepted. WhatsApp and Android share metadata can be incomplete, so do not reject `.ogg`, `.opus`, `.oga`, `.amr`, `.m4a`, `.aac`, `.mp3`, `.flac`, `.wav`, `.webm`, or `.3gp` files only because `file.type` is empty or `application/octet-stream`. Keep this validation list in sync with the manifest `share_target.accept` list.
 
 Implementation detail: service workers can use IndexedDB. Keep the IDB code dependency-free inside the worker unless the bundler is configured to bundle the helper safely into `src-sw.js`.
 

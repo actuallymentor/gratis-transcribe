@@ -11,3 +11,4 @@
 - Clarify offline fonts, share metadata, ASR chunking, and CI versions.
 - Define share error codes, font bundling, audio decode limits, and CSP.
 - Clarify lenient audio validation and deterministic resampling.
+- Keep lenient audio validation aligned with manifest accept entries.
