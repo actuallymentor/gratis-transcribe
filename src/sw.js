@@ -10,7 +10,7 @@ precacheAndRoute( self.__WB_MANIFEST )
 cleanupOutdatedCaches()
 
 registerRoute(
-    ( { request } ) => [ `style`, `script`, `worker`, `font`, `image` ].includes( request.destination ),
+    is_app_asset_request,
     new CacheFirst( {
         cacheName: `transcribe-gratis-assets-v1`,
         plugins: [
@@ -43,6 +43,14 @@ registerRoute(
 )
 
 registerRoute( new NavigationRoute( createHandlerBoundToURL( `/index.html` ) ) )
+
+function is_app_asset_request( { request, url } ) {
+
+    const cacheable_destinations = [ `style`, `script`, `worker`, `font`, `image` ]
+
+    return cacheable_destinations.includes( request.destination ) || url.pathname.endsWith( `.mjs` )
+
+}
 
 function is_model_asset_url( url ) {
 

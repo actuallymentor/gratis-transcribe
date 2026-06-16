@@ -18,3 +18,4 @@
 - VitePWA can emit duplicate Workbox precache entries for public PWA icons when `globPatterns` also includes `png`; ignore those copied icon paths so `sw.js` evaluates and registers.
 - Offline share redirects with `?share_id=` need a Workbox `NavigationRoute` bound to the precached `index.html`; query-sensitive runtime page caching is not enough.
 - With VitePWA `registerType: "prompt"` and `injectManifest`, the custom service worker must handle `{ type: "SKIP_WAITING" }` messages so the visible update banner can activate a waiting worker.
+- Transformers.js 4.2 initializes ONNX Runtime Web from `onnxruntime-web/webgpu`; unless `env.backends.onnx.wasm.wasmPaths` is set, ONNX Runtime defaults its WASM factory and binary URLs to jsDelivr. The app CSP does not allow external script CDNs, so self-host the `ort-wasm-simd-threaded.asyncify.mjs` and `.wasm` assets through Vite and point `wasmPaths` at those local URLs before creating ASR pipelines.

@@ -9,3 +9,4 @@
 - 2026-06-16: Moved Cloudflare Pages `_headers` and `_redirects` into `public/`, added stale-run and duplicate-start guards for transcription processing, and verified lint, unit tests, build, Playwright smoke test, and dependency audit.
 - 2026-06-16: Fixed service-worker registration and offline `?share_id=` navigation fallback, added worker termination on cancel, hid unusable retry actions after source deletion, added model-cache tests, and added a Playwright offline shared-URL regression.
 - 2026-06-16: Restored prompt-based service-worker update activation with a `SKIP_WAITING` message handler and kept the web manifest precached offline.
+- 2026-06-16: Fixed browser model-download backend failures by self-hosting ONNX Runtime Web WASM assets, wiring Transformers.js `wasmPaths` to local Vite URLs, and caching the emitted `.mjs` runtime module.

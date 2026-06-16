@@ -36,7 +36,7 @@ export default defineConfig( {
             filename: `sw.js`,
             registerType: `prompt`,
             injectManifest: {
-                globPatterns: [ `**/*.{html,js,css,png,svg,ico,wav,woff2,webmanifest}` ],
+                globPatterns: [ `**/*.{html,js,mjs,css,png,svg,ico,wav,woff2,webmanifest}` ],
                 globIgnores: [ `assets/icon-192.png`, `assets/icon-512.png`, `assets/maskable-512.png` ],
                 maximumFileSizeToCacheInBytes: 10 * 1_024 * 1_024
             },

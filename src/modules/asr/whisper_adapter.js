@@ -1,9 +1,13 @@
 import { env, pipeline } from '@huggingface/transformers'
+import { log } from 'mentie'
 import { CACHE_KEY, SAMPLE_RATE, WHISPER_CHUNK_LENGTH_S, WHISPER_STRIDE_LENGTH_S } from '../shared/constants.js'
+import { get_onnx_runtime_asset_paths } from './onnx_runtime_assets.js'
 
 let transcriber = null
 let loaded_profile = null
 let loaded_backend = null
+
+const describe_error = error => error?.message || `${ error }`
 
 const configure_transformers_environment = () => {
 
@@ -12,6 +16,10 @@ const configure_transformers_environment = () => {
     env.cacheKey = CACHE_KEY
     env.allowLocalModels = false
     env.allowRemoteModels = true
+
+    // Keep ONNX Runtime from dynamically importing its default jsDelivr module.
+    env.backends.onnx.wasm.wasmPaths = get_onnx_runtime_asset_paths()
+    env.backends.onnx.wasm.proxy = false
 
 }
 
@@ -69,12 +77,20 @@ export const create_whisper_adapter = () => {
                     device: preferred_device
                 } )
                 loaded_backend = preferred_device
-            } catch {
-                transcriber = await pipeline( `automatic-speech-recognition`, profile.model_id, {
-                    ...shared_options,
-                    device: `wasm`
-                } )
-                loaded_backend = `wasm`
+            } catch ( preferred_error ) {
+                if( preferred_device === `wasm` ) throw new Error( `Speech model backend failed. wasm: ${ describe_error( preferred_error ) }` )
+
+                log.warn( `WebGPU backend failed, falling back to WASM`, preferred_error )
+
+                try {
+                    transcriber = await pipeline( `automatic-speech-recognition`, profile.model_id, {
+                        ...shared_options,
+                        device: `wasm`
+                    } )
+                    loaded_backend = `wasm`
+                } catch ( wasm_error ) {
+                    throw new Error( `Speech model backend failed. webgpu: ${ describe_error( preferred_error ) }. wasm: ${ describe_error( wasm_error ) }` )
+                }
             }
 
             return { backend: loaded_backend }

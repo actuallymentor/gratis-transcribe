@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1] - 2026-06-16
+
+### Fixed
+
+- Self-host ONNX Runtime Web assets for browser model downloads.
+- Cache the emitted ONNX runtime module for offline backend startup.
+
 ## [0.1.0] - 2026-06-16
 
 ### Added
