@@ -11,6 +11,7 @@
 - Add Cloudflare Pages deployment workflow and GitHub secret configuration.
 - Add generated PWA icons, a silent audio sample, unit tests, and Playwright smoke test.
 - Add stale-run and duplicate-start guards for transcription processing.
+- Add an offline shared-URL Playwright regression and model-cache unit coverage.
 
 ### Changed
 
@@ -19,3 +20,6 @@
 - Clarify lenient audio validation and deterministic resampling.
 - Keep lenient audio validation aligned with manifest accept entries.
 - Copy Cloudflare Pages `_headers` and `_redirects` through the Vite public directory.
+- Use a precached app-shell navigation fallback for offline share redirects.
+- Terminate ASR worker work on cancel and hide Retry when source audio was deleted.
+- Use non-mutating lint in deployment CI.

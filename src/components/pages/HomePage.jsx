@@ -127,6 +127,7 @@ export function HomePage() {
         />
 
         <TranscriptPanel
+            can_retry={ Boolean( transcript.share?.file ) }
             transcript={ transcript.transcript }
             on_clear={ transcript.clear_current_share }
             on_retry={ process_share }

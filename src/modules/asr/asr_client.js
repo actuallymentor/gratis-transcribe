@@ -43,8 +43,34 @@ const post_worker_message = ( type, payload = {}, { progress = () => {}, transfe
 
     return new Promise( ( resolve, reject ) => {
         pending_messages.set( id, { resolve, reject, progress } )
-        active_worker.postMessage( { id, type, payload }, transfer )
+
+        try {
+            active_worker.postMessage( { id, type, payload }, transfer )
+        } catch ( error ) {
+            pending_messages.delete( id )
+            reject( error )
+        }
     } )
+
+}
+
+/**
+ * Terminates active ASR work and rejects pending worker requests.
+ * @param {string} reason
+ * @returns {void}
+ */
+export const cancel_asr_work = ( reason = `Transcription cancelled.` ) => {
+
+    if( !worker ) return
+
+    const error = new Error( reason )
+
+    worker.removeEventListener( `message`, receive_worker_message )
+    worker.terminate()
+    worker = null
+
+    pending_messages.forEach( ( { reject } ) => reject( error ) )
+    pending_messages.clear()
 
 }
 

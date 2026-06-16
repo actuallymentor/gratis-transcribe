@@ -1,12 +1,10 @@
-import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching'
-import { registerRoute } from 'workbox-routing'
-import { CacheFirst, StaleWhileRevalidate } from 'workbox-strategies'
+import { cleanupOutdatedCaches, createHandlerBoundToURL, precacheAndRoute } from 'workbox-precaching'
+import { NavigationRoute, registerRoute } from 'workbox-routing'
+import { CacheFirst } from 'workbox-strategies'
 import { CacheableResponsePlugin } from 'workbox-cacheable-response'
 import { ExpirationPlugin } from 'workbox-expiration'
-import { DB_NAME, DB_VERSION, MAX_AUDIO_FILE_BYTES, SHARE_STATUS, STORE_INCOMING_SHARES, STORE_SETTINGS, STORE_TRANSCRIPTS } from './modules/shared/constants.js'
+import { DB_NAME, DB_VERSION, SHARE_STATUS, STORE_INCOMING_SHARES, STORE_SETTINGS, STORE_TRANSCRIPTS } from './modules/shared/constants.js'
 import { validate_shared_audio_file } from './modules/share/share_target.js'
-
-self.skipWaiting()
 
 precacheAndRoute( self.__WB_MANIFEST )
 cleanupOutdatedCaches()
@@ -44,13 +42,7 @@ registerRoute(
     } )
 )
 
-registerRoute(
-    ( { request } ) => request.mode === `navigate`,
-    new StaleWhileRevalidate( {
-        cacheName: `transcribe-gratis-pages-v1`,
-        plugins: [ new CacheableResponsePlugin( { statuses: [ 0, 200 ] } ) ]
-    } )
-)
+registerRoute( new NavigationRoute( createHandlerBoundToURL( `/index.html` ) ) )
 
 function is_model_asset_url( url ) {
 
@@ -91,7 +83,6 @@ async function receive_shared_audio( request ) {
         const validation = validate_shared_audio_file( file )
 
         if( !validation.ok ) return redirect_to( `/?share_error=${ validation.code }` )
-        if( file.size > MAX_AUDIO_FILE_BYTES ) return redirect_to( `/?share_error=too_large` )
 
         const share_id = crypto.randomUUID()
 
@@ -143,12 +134,16 @@ async function save_share_to_indexed_db( share ) {
     return new Promise( ( resolve, reject ) => {
         const transaction = db.transaction( STORE_INCOMING_SHARES, `readwrite` )
         const store = transaction.objectStore( STORE_INCOMING_SHARES )
-        const request = store.put( share )
+        store.put( share )
 
-        request.onsuccess = () => resolve( share )
-        request.onerror = () => reject( request.error )
-        transaction.oncomplete = () => db.close()
-        transaction.onerror = () => reject( transaction.error )
+        transaction.oncomplete = () => {
+            db.close()
+            resolve( share )
+        }
+        transaction.onerror = () => {
+            db.close()
+            reject( transaction.error )
+        }
     } )
 
 }

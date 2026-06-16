@@ -7,3 +7,4 @@
 - 2026-06-16: Synced lenient audio validation with manifest accept entries, including `.flac`.
 - 2026-06-16: Implemented the Vite React PWA, custom share-target service worker, IndexedDB storage, browser audio preparation, Transformers.js ASR worker, offline model setup flow, Cloudflare Pages workflow, generated PWA assets, and tests.
 - 2026-06-16: Moved Cloudflare Pages `_headers` and `_redirects` into `public/`, added stale-run and duplicate-start guards for transcription processing, and verified lint, unit tests, build, Playwright smoke test, and dependency audit.
+- 2026-06-16: Fixed service-worker registration and offline `?share_id=` navigation fallback, added worker termination on cancel, hid unusable retry actions after source deletion, added model-cache tests, and added a Playwright offline shared-URL regression.

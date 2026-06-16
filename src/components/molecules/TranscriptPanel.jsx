@@ -33,7 +33,7 @@ const Actions = styled.div`
  * @param {Object} props
  * @returns {JSX.Element|null}
  */
-export function TranscriptPanel( { transcript, on_clear, on_retry } ) {
+export function TranscriptPanel( { transcript, can_retry = false, on_clear, on_retry } ) {
 
     if( !transcript ) return null
 
@@ -57,7 +57,7 @@ export function TranscriptPanel( { transcript, on_clear, on_retry } ) {
         <Actions>
             <Button icon={ Clipboard } onClick={ copy_text }>Copy</Button>
             <Button icon={ Share2 } onClick={ share_text }>Share text</Button>
-            <Button icon={ RotateCcw } onClick={ on_retry }>Retry</Button>
+            { can_retry ? <Button icon={ RotateCcw } onClick={ on_retry }>Retry</Button> : null }
             <Button icon={ Trash2 } onClick={ on_clear }>Clear</Button>
         </Actions>
     </Panel>

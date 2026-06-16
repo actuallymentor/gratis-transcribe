@@ -26,7 +26,12 @@ const Details = styled.div`
  */
 export function ProcessingPanel( { error, is_processing, progress, share, on_cancel, on_start } ) {
 
-    if( !share ) return null
+    if( !share && !error ) return null
+
+    if( !share ) return <Panel aria-label="Audio processing">
+        <h2>Shared audio</h2>
+        <p role="alert">{ error }</p>
+    </Panel>
 
     return <Panel aria-label="Audio processing">
         <h2>{ is_processing ? progress.label : `Shared audio` }</h2>

@@ -15,3 +15,5 @@
 - Cloudflare Pages `_headers` and `_redirects` files must live under `public/` in this Vite app so they are copied into `dist`.
 - Local Wrangler is not required because deployment uses `cloudflare/wrangler-action`; removing the local Wrangler dependency avoided audit issues from its transitive dependencies.
 - Transcription cancellation must invalidate an active run token, and processing state should flip before async setup reads to prevent duplicate starts. Browser decode/model/transcribe work cannot always be hard-aborted, so every awaited boundary should ignore stale completions before updating IndexedDB or UI state.
+- VitePWA can emit duplicate Workbox precache entries for public PWA icons when `globPatterns` also includes `png`; ignore those copied icon paths so `sw.js` evaluates and registers.
+- Offline share redirects with `?share_id=` need a Workbox `NavigationRoute` bound to the precached `index.html`; query-sensitive runtime page caching is not enough.

@@ -14,8 +14,10 @@ npm run dev
 
 ```bash
 npm run lint
+npm run lint:check
 npm test
 npm run build
+npm run test:e2e
 ```
 
 ## Deployment

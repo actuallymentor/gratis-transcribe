@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { prepare_audio_file } from '../modules/audio/decode_audio.js'
 import { load_incoming_share } from '../modules/storage/app_db.js'
 import { DB_NAME, SHARE_STATUS } from '../modules/shared/constants.js'
-import { transcribe_audio } from '../modules/asr/asr_client.js'
+import { cancel_asr_work, transcribe_audio } from '../modules/asr/asr_client.js'
 import { use_transcript_store } from './transcript_store.js'
 
 let resolve_prepared_audio
@@ -15,6 +15,7 @@ vi.mock( '../modules/audio/decode_audio.js', () => ( {
 } ) )
 
 vi.mock( '../modules/asr/asr_client.js', () => ( {
+    cancel_asr_work: vi.fn(),
     load_asr_model: vi.fn( async () => ( { backend: `wasm` } ) ),
     transcribe_audio: vi.fn( async () => ( {
         text: `late transcript`,
@@ -66,6 +67,7 @@ describe( `transcript store`, () => {
         const stored_share = await load_incoming_share( share.share_id )
 
         expect( transcribe_audio ).not.toHaveBeenCalled()
+        expect( cancel_asr_work ).toHaveBeenCalledTimes( 1 )
         expect( stored_share.status ).toBe( SHARE_STATUS.cancelled )
         expect( use_transcript_store.getState().transcript ).toBeNull()
     } )
