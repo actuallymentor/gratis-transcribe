@@ -374,8 +374,8 @@ const receive_shared_audio = async request => {
     const redirect_to = path => Response.redirect( new URL( path, self.location.origin ).href, 303 )
 
     if( !file ) return redirect_to( `/?share_error=no_audio` )
-    if( file.size > MAX_AUDIO_FILE_BYTES ) return redirect_to( `/?share_error=too_large` )
     if( !is_probable_audio_file( file ) ) return redirect_to( `/?share_error=not_audio` )
+    if( file.size > MAX_AUDIO_FILE_BYTES ) return redirect_to( `/?share_error=too_large` )
 
     const share_id = crypto.randomUUID()
 
@@ -400,6 +400,8 @@ const receive_shared_audio = async request => {
 
 }
 ```
+
+`MAX_AUDIO_FILE_BYTES` is the v1 `100 MB` limit. `is_probable_audio_file()` must be lenient: accept known audio MIME types, known audio extensions, and generic or empty MIME metadata when the filename extension is accepted. WhatsApp and Android share metadata can be incomplete, so do not reject `.ogg`, `.opus`, `.oga`, `.amr`, `.m4a`, `.aac`, `.mp3`, `.wav`, `.webm`, or `.3gp` files only because `file.type` is empty or `application/octet-stream`.
 
 Implementation detail: service workers can use IndexedDB. Keep the IDB code dependency-free inside the worker unless the bundler is configured to bundle the helper safely into `src-sw.js`.
 
@@ -463,13 +465,12 @@ The audio module must convert accepted files into the input format expected by t
 Pipeline:
 
 1. Read shared `Blob` into an `ArrayBuffer`.
-2. Decode on the main thread with `AudioContext.decodeAudioData`.
-3. Resample through `OfflineAudioContext` configured at `16_000 Hz`.
-4. Convert to mono by averaging channels.
-5. Produce a transferable `Float32Array` at `16_000 Hz`.
-6. Release references to the source `ArrayBuffer` and decoded multi-channel buffer as soon as the prepared mono buffer exists.
-7. Send the prepared audio buffer to the ASR worker.
-8. Let the active ASR adapter own chunking and transcript merging.
+2. Decode and resample in one deterministic main-thread pass with an `OfflineAudioContext` configured at `16_000 Hz`.
+3. Convert to mono by averaging channels.
+4. Produce a transferable `Float32Array` at `16_000 Hz`.
+5. Release references to the source `ArrayBuffer` and decoded multi-channel buffer as soon as the prepared mono buffer exists.
+6. Send the prepared audio buffer to the ASR worker.
+7. Let the active ASR adapter own chunking and transcript merging.
 
 Defaults:
 
