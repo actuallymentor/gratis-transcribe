@@ -23,3 +23,4 @@
 - Use a precached app-shell navigation fallback for offline share redirects.
 - Terminate ASR worker work on cancel and hide Retry when source audio was deleted.
 - Use non-mutating lint in deployment CI.
+- Preserve prompt-based PWA update activation and offline manifest caching.

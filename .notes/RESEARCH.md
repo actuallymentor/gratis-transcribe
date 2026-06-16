@@ -17,3 +17,4 @@
 - Transcription cancellation must invalidate an active run token, and processing state should flip before async setup reads to prevent duplicate starts. Browser decode/model/transcribe work cannot always be hard-aborted, so every awaited boundary should ignore stale completions before updating IndexedDB or UI state.
 - VitePWA can emit duplicate Workbox precache entries for public PWA icons when `globPatterns` also includes `png`; ignore those copied icon paths so `sw.js` evaluates and registers.
 - Offline share redirects with `?share_id=` need a Workbox `NavigationRoute` bound to the precached `index.html`; query-sensitive runtime page caching is not enough.
+- With VitePWA `registerType: "prompt"` and `injectManifest`, the custom service worker must handle `{ type: "SKIP_WAITING" }` messages so the visible update banner can activate a waiting worker.

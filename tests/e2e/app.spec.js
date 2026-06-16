@@ -10,7 +10,11 @@ test( `home page renders the transcription workspace`, async ( { page } ) => {
 
 test( `shared URL loads from the app shell while offline`, async ( { context, page } ) => {
     await page.goto( `/` )
-    await page.waitForFunction( () => navigator.serviceWorker?.ready )
+    await page.waitForFunction( async () => {
+        const registration = await navigator.serviceWorker?.ready
+
+        return Boolean( registration?.active )
+    } )
     await page.reload()
     await page.waitForFunction( () => Boolean( navigator.serviceWorker?.controller ) )
 
