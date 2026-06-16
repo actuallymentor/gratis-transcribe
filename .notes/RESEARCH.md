@@ -7,4 +7,5 @@
 - Include both MIME types and dot-prefixed extensions for audio accepts. Avoid MIME parameters in `accept`.
 - Whisper or Distil-Whisper through Transformers.js is the practical browser ASR baseline. Parakeet is the desired accuracy direction but needs a custom adapter/runtime validation before becoming default.
 - Cache only the app shell during service-worker install. Use a user-triggered model download flow, browser Cache API/Transformers.js cache, storage quota checks, and a warm-up transcription before marking offline readiness.
+- Font assets must be self-hosted and precached; runtime Google Fonts requests conflict with the offline/privacy requirements.
 - Cloudflare Pages is suitable for the app shell, but ONNX model files can exceed the 25 MiB per-file asset limit. Use Hugging Face or Cloudflare R2 for larger model assets.

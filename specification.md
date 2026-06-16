@@ -134,6 +134,7 @@ curl -o- https://raw.githubusercontent.com/actuallymentor/airier/main/quickstart
 |       `-- deploy.yml
 |-- public
 |   |-- assets
+|   |   |-- fonts
 |   |   |-- icon-192.png
 |   |   |-- icon-512.png
 |   |   `-- maskable-512.png
@@ -188,6 +189,7 @@ curl -o- https://raw.githubusercontent.com/actuallymentor/airier/main/quickstart
 
 - `/`: install/onboarding page when not launched with a share; transcription workspace when installed.
 - `/?share_id=<id>`: opens a shared file stored by the service worker.
+- `/?share_error=<code>`: opens the app with a share-target error state, such as `no_audio`.
 - `/share-target`: manifest share-target action; this route should never render directly because the service worker should intercept `POST` and redirect.
 - `/settings`: model/storage/privacy settings.
 
@@ -362,20 +364,26 @@ const receive_shared_audio = async request => {
     const files = form_data.getAll( `audio` ).filter( value => value instanceof File )
     const [ file ] = files
 
-    if( !file ) return Response.redirect( `/?share_error=no_audio`, 303 )
+    const redirect_to = path => Response.redirect( new URL( path, self.location.origin ).href, 303 )
+
+    if( !file ) return redirect_to( `/?share_error=no_audio` )
 
     const share_id = crypto.randomUUID()
 
     await save_share_to_indexed_db( {
         share_id,
         file,
+        name: file.name || ``,
+        type: file.type || ``,
+        size: file.size,
         title: form_data.get( `title` ) || ``,
         text: form_data.get( `text` ) || ``,
         url: form_data.get( `url` ) || ``,
-        received_at: Date.now()
+        received_at: Date.now(),
+        status: `received`
     } )
 
-    return Response.redirect( `/?share_id=${ encodeURIComponent( share_id ) }`, 303 )
+    return redirect_to( `/?share_id=${ encodeURIComponent( share_id ) }` )
 
 }
 ```
@@ -442,20 +450,21 @@ The audio module must convert accepted files into the input format expected by t
 Pipeline:
 
 1. Read shared `Blob` into an `ArrayBuffer`.
-2. Decode with `AudioContext.decodeAudioData`.
+2. Decode and resample on the main thread with `AudioContext` or `OfflineAudioContext`.
 3. Convert to mono by averaging channels.
-4. Resample to `16_000 Hz`.
-5. Chunk into transcription windows.
-6. Send chunks to the ASR worker.
-7. Merge partial transcripts.
+4. Produce a transferable `Float32Array` at `16_000 Hz`.
+5. Send the prepared audio buffer to the ASR worker.
+6. Let the active ASR adapter own chunking and transcript merging.
 
 Defaults:
 
 - Sample rate: `16_000 Hz`.
-- Chunk length: `30s`.
-- Chunk overlap: `1s`.
+- Whisper/Transformers.js chunk length: `30s`.
+- Whisper/Transformers.js chunk overlap: `1s`.
 - Maximum single file size for v1: `100 MB`.
 - Maximum decoded duration for v1: `30 minutes`.
+
+Do not chunk twice. When using the Transformers.js ASR pipeline, pass the full prepared mono buffer and configure pipeline chunking with `chunk_length_s` and `stride_length_s`. Only use manual pre-cut chunks for adapters that do not provide their own long-audio chunking.
 
 If decoding fails:
 
@@ -500,6 +509,7 @@ Transformers.js setup requirements:
 
 - Run ASR in a Web Worker.
 - Use `pipeline( "automatic-speech-recognition", model_id, { device } )`.
+- Pass the prepared audio buffer with `chunk_length_s` and `stride_length_s`; do not pre-chunk before calling this adapter.
 - Use a progress callback to update model download state.
 - Ensure `env.useBrowserCache = true`.
 - Ensure `env.useWasmCache = true`.
@@ -589,12 +599,14 @@ Use:
 
 - Body background `#fafbfc`.
 - Accent `#7ec0d0`.
-- Montserrat Variable for headings via Google Fonts.
-- Nunito Variable for body via Google Fonts.
+- Montserrat Variable for headings, sourced from Google Fonts at build time and self-hosted under app assets.
+- Nunito Variable for body, sourced from Google Fonts at build time and self-hosted under app assets.
 - Touch targets at least `48dp` equivalent.
 - Clear borders and readable contrast.
 - Short, direct text.
 - Persistent install pill on bottom-left when installable and not running standalone.
+
+Fonts must be bundled, served from `transcribe.gratis.sh`, and precached with the app shell. The production app must not fetch `fonts.googleapis.com` or `fonts.gstatic.com` at runtime.
 
 Avoid:
 
@@ -698,7 +710,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Node
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -748,7 +760,7 @@ printf %s "${CLOUDFLARE_API_TOKEN:-$CLOUDFLARE_API_KEY}" | gh secret set CLOUDFL
 gh secret list
 ```
 
-The implementation should verify the secrets exist before relying on CI.
+The implementation should verify the secrets exist before relying on CI. The Cloudflare token should have Cloudflare Pages edit permission for the target account.
 
 ## 18. Testing Requirements
 
