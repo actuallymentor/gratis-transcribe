@@ -141,3 +141,16 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# Dotfiles
+.*
+!.babelrc
+!.github/
+!.github/**
+!.husky/
+!.husky/**
+!.notes/
+!.notes/**
+!.nvmrc
+!.vscode/
+!.vscode/**

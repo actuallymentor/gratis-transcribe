@@ -12,3 +12,6 @@
 - Font assets must be self-hosted and precached; runtime Google Fonts requests conflict with the offline/privacy requirements.
 - Enforce self-hosted fonts with CSP where possible, and keep model-host exceptions in `connect-src`.
 - Cloudflare Pages is suitable for the app shell, but ONNX model files can exceed the 25 MiB per-file asset limit. Use Hugging Face or Cloudflare R2 for larger model assets.
+- Cloudflare Pages `_headers` and `_redirects` files must live under `public/` in this Vite app so they are copied into `dist`.
+- Local Wrangler is not required because deployment uses `cloudflare/wrangler-action`; removing the local Wrangler dependency avoided audit issues from its transitive dependencies.
+- Transcription cancellation must invalidate an active run token, and processing state should flip before async setup reads to prevent duplicate starts. Browser decode/model/transcribe work cannot always be hard-aborted, so every awaited boundary should ignore stale completions before updating IndexedDB or UI state.

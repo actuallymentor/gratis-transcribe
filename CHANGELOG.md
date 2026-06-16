@@ -1,10 +1,16 @@
 # Changelog
 
-## [Unreleased] - 2026-06-16
+## [0.1.0] - 2026-06-16
 
 ### Added
 
 - Add implementation specification for the local audio transcription PWA.
+- Implement the installable React PWA with Android audio share-target support.
+- Add local IndexedDB storage for shared audio, transcripts, and settings.
+- Add a Transformers.js Whisper worker with offline model setup flow.
+- Add Cloudflare Pages deployment workflow and GitHub secret configuration.
+- Add generated PWA icons, a silent audio sample, unit tests, and Playwright smoke test.
+- Add stale-run and duplicate-start guards for transcription processing.
 
 ### Changed
 
@@ -12,3 +18,4 @@
 - Define share error codes, font bundling, audio decode limits, and CSP.
 - Clarify lenient audio validation and deterministic resampling.
 - Keep lenient audio validation aligned with manifest accept entries.
+- Copy Cloudflare Pages `_headers` and `_redirects` through the Vite public directory.
