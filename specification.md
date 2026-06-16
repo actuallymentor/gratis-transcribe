@@ -114,6 +114,7 @@ Use the existing project preferences unless a hard constraint prevents it.
 - Styling: `styled-components`.
 - Notifications: `react-hot-toast`.
 - Utilities/logging: `mentie`; use `log` instead of `console`.
+- Fonts: `@fontsource-variable/montserrat` and `@fontsource-variable/nunito`, bundled by Vite.
 - ASR baseline: `@huggingface/transformers`.
 - Inference runtime: `onnxruntime-web` through Transformers.js.
 - IndexedDB helper: use a small dependency such as `idb`, or write a focused wrapper if the app only needs a few operations.
@@ -134,7 +135,6 @@ curl -o- https://raw.githubusercontent.com/actuallymentor/airier/main/quickstart
 |       `-- deploy.yml
 |-- public
 |   |-- assets
-|   |   |-- fonts
 |   |   |-- icon-192.png
 |   |   |-- icon-512.png
 |   |   `-- maskable-512.png
@@ -189,9 +189,16 @@ curl -o- https://raw.githubusercontent.com/actuallymentor/airier/main/quickstart
 
 - `/`: install/onboarding page when not launched with a share; transcription workspace when installed.
 - `/?share_id=<id>`: opens a shared file stored by the service worker.
-- `/?share_error=<code>`: opens the app with a share-target error state, such as `no_audio`.
+- `/?share_error=<code>`: opens the app with a share-target error state.
 - `/share-target`: manifest share-target action; this route should never render directly because the service worker should intercept `POST` and redirect.
 - `/settings`: model/storage/privacy settings.
+
+Share-target error codes:
+
+- `no_audio`: no file was present in the share payload.
+- `not_audio`: the shared file does not match accepted audio/container types.
+- `too_large`: the shared file exceeds the configured v1 file-size limit.
+- `storage_failed`: the app could not persist the shared file before redirecting.
 
 ### Uninstalled Browser Page
 
@@ -367,21 +374,27 @@ const receive_shared_audio = async request => {
     const redirect_to = path => Response.redirect( new URL( path, self.location.origin ).href, 303 )
 
     if( !file ) return redirect_to( `/?share_error=no_audio` )
+    if( file.size > MAX_AUDIO_FILE_BYTES ) return redirect_to( `/?share_error=too_large` )
+    if( !is_probable_audio_file( file ) ) return redirect_to( `/?share_error=not_audio` )
 
     const share_id = crypto.randomUUID()
 
-    await save_share_to_indexed_db( {
-        share_id,
-        file,
-        name: file.name || ``,
-        type: file.type || ``,
-        size: file.size,
-        title: form_data.get( `title` ) || ``,
-        text: form_data.get( `text` ) || ``,
-        url: form_data.get( `url` ) || ``,
-        received_at: Date.now(),
-        status: `received`
-    } )
+    try {
+        await save_share_to_indexed_db( {
+            share_id,
+            file,
+            name: file.name || ``,
+            type: file.type || ``,
+            size: file.size,
+            title: form_data.get( `title` ) || ``,
+            text: form_data.get( `text` ) || ``,
+            url: form_data.get( `url` ) || ``,
+            received_at: Date.now(),
+            status: `received`
+        } )
+    } catch( error ) {
+        return redirect_to( `/?share_error=storage_failed` )
+    }
 
     return redirect_to( `/?share_id=${ encodeURIComponent( share_id ) }` )
 
@@ -450,11 +463,13 @@ The audio module must convert accepted files into the input format expected by t
 Pipeline:
 
 1. Read shared `Blob` into an `ArrayBuffer`.
-2. Decode and resample on the main thread with `AudioContext` or `OfflineAudioContext`.
-3. Convert to mono by averaging channels.
-4. Produce a transferable `Float32Array` at `16_000 Hz`.
-5. Send the prepared audio buffer to the ASR worker.
-6. Let the active ASR adapter own chunking and transcript merging.
+2. Decode on the main thread with `AudioContext.decodeAudioData`.
+3. Resample through `OfflineAudioContext` configured at `16_000 Hz`.
+4. Convert to mono by averaging channels.
+5. Produce a transferable `Float32Array` at `16_000 Hz`.
+6. Release references to the source `ArrayBuffer` and decoded multi-channel buffer as soon as the prepared mono buffer exists.
+7. Send the prepared audio buffer to the ASR worker.
+8. Let the active ASR adapter own chunking and transcript merging.
 
 Defaults:
 
@@ -465,6 +480,8 @@ Defaults:
 - Maximum decoded duration for v1: `30 minutes`.
 
 Do not chunk twice. When using the Transformers.js ASR pipeline, pass the full prepared mono buffer and configure pipeline chunking with `chunk_length_s` and `stride_length_s`. Only use manual pre-cut chunks for adapters that do not provide their own long-audio chunking.
+
+Decoding can be expensive on Android phones. Validate file size before decoding, show a `Preparing audio` busy state while decoding/resampling, and fail gracefully if the browser cannot allocate enough memory for the decoded buffer.
 
 If decoding fails:
 
@@ -599,14 +616,14 @@ Use:
 
 - Body background `#fafbfc`.
 - Accent `#7ec0d0`.
-- Montserrat Variable for headings, sourced from Google Fonts at build time and self-hosted under app assets.
-- Nunito Variable for body, sourced from Google Fonts at build time and self-hosted under app assets.
+- Montserrat Variable for headings through `@fontsource-variable/montserrat`.
+- Nunito Variable for body through `@fontsource-variable/nunito`.
 - Touch targets at least `48dp` equivalent.
 - Clear borders and readable contrast.
 - Short, direct text.
 - Persistent install pill on bottom-left when installable and not running standalone.
 
-Fonts must be bundled, served from `transcribe.gratis.sh`, and precached with the app shell. The production app must not fetch `fonts.googleapis.com` or `fonts.gstatic.com` at runtime.
+Fonts must be bundled into the Vite build, served from `transcribe.gratis.sh`, and precached with the app shell. The production app must not fetch `fonts.googleapis.com` or `fonts.gstatic.com` at runtime.
 
 Avoid:
 
@@ -668,6 +685,7 @@ Recommended baseline:
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer
   Permissions-Policy: microphone=(), camera=(), geolocation=()
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; media-src 'self' blob:; worker-src 'self' blob:; connect-src 'self' https://huggingface.co https://*.huggingface.co https://*.hf.co https://*.r2.dev
 
 /index.html
   Cache-Control: no-cache
@@ -686,6 +704,8 @@ Recommended baseline:
 ```
 
 If threaded WASM or `SharedArrayBuffer` becomes necessary, evaluate adding cross-origin isolation headers. Only do this after confirming all model/WASM assets are served with compatible CORS/CORP behavior.
+
+The service worker precache manifest must include built app-shell font assets, including `.woff2` files emitted by `@fontsource-variable`. If the model host differs from Hugging Face or an R2 domain, update `connect-src` before deployment.
 
 ### GitHub Actions Workflow
 
