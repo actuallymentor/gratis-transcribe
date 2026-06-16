@@ -1,13 +1,10 @@
-import { ACCEPTED_AUDIO_EXTENSIONS, ACCEPTED_AUDIO_MIME_TYPES, MAX_AUDIO_FILE_BYTES, SHARE_ERROR_MESSAGES } from '../shared/constants.js'
-
-const GENERIC_MIME_TYPES = new Set( [
-    ``,
-    `application/octet-stream`,
-    `binary/octet-stream`
-] )
+import { ACCEPTED_AUDIO_EXTENSIONS, ACCEPTED_AUDIO_MIME_TYPES, GENERIC_AUDIO_SHARE_MIME_TYPES, MAX_AUDIO_FILE_BYTES, SHARE_ERROR_MESSAGES } from '../shared/constants.js'
 
 const ACCEPTED_EXTENSION_SET = new Set( ACCEPTED_AUDIO_EXTENSIONS )
 const ACCEPTED_MIME_TYPE_SET = new Set( ACCEPTED_AUDIO_MIME_TYPES )
+const GENERIC_MIME_TYPE_SET = new Set( GENERIC_AUDIO_SHARE_MIME_TYPES )
+
+const normalize_mime_type = mime_type => `${ mime_type || `` }`.toLowerCase().split( `;` )[ 0 ].trim()
 
 /**
  * Extracts a normalized extension from a filename.
@@ -34,12 +31,12 @@ export const is_probable_audio_file = ( file ) => {
 
     if( !file ) return false
 
-    const mime_type = `${ file.type || `` }`.toLowerCase()
+    const mime_type = normalize_mime_type( file.type )
     const extension = get_file_extension( file.name || `` )
 
     if( mime_type.startsWith( `audio/` ) ) return true
     if( ACCEPTED_MIME_TYPE_SET.has( mime_type ) ) return true
-    if( GENERIC_MIME_TYPES.has( mime_type ) && ACCEPTED_EXTENSION_SET.has( extension ) ) return true
+    if( GENERIC_MIME_TYPE_SET.has( mime_type ) && ACCEPTED_EXTENSION_SET.has( extension ) ) return true
 
     return ACCEPTED_EXTENSION_SET.has( extension ) && !mime_type
 

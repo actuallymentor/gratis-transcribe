@@ -1,31 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
-
-const audio_accept = [
-    `audio/*`,
-    `audio/ogg`,
-    `audio/opus`,
-    `audio/mpeg`,
-    `audio/mp4`,
-    `audio/aac`,
-    `audio/flac`,
-    `audio/amr`,
-    `audio/wav`,
-    `audio/webm`,
-    `video/3gpp`,
-    `.ogg`,
-    `.oga`,
-    `.opus`,
-    `.mp3`,
-    `.m4a`,
-    `.aac`,
-    `.flac`,
-    `.amr`,
-    `.wav`,
-    `.webm`,
-    `.3gp`
-]
+import { SHARE_TARGET_AUDIO_ACCEPT } from './src/modules/shared/constants.js'
 
 export default defineConfig( {
     plugins: [
@@ -84,7 +60,7 @@ export default defineConfig( {
                         files: [
                             {
                                 name: `audio`,
-                                accept: audio_accept
+                                accept: SHARE_TARGET_AUDIO_ACCEPT
                             }
                         ]
                     }

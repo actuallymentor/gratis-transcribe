@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.2] - 2026-06-16
+
+### Fixed
+
+- Show the PWA for Android `.opus` shares with generic MIME metadata.
+
 ## [0.1.1] - 2026-06-16
 
 ### Fixed

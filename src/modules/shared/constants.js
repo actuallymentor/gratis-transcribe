@@ -64,6 +64,21 @@ export const ACCEPTED_AUDIO_MIME_TYPES = Object.freeze( [
     `video/3gpp`
 ] )
 
+export const GENERIC_AUDIO_SHARE_MIME_TYPES = Object.freeze( [
+    ``,
+    `application/octet-stream`,
+    `binary/octet-stream`,
+    `application/ogg`,
+    `application/x-ogg`
+] )
+
+export const SHARE_TARGET_AUDIO_ACCEPT = Object.freeze( [
+    `audio/*`,
+    ...ACCEPTED_AUDIO_MIME_TYPES,
+    ...GENERIC_AUDIO_SHARE_MIME_TYPES.filter( Boolean ),
+    ...ACCEPTED_AUDIO_EXTENSIONS
+] )
+
 export const MODEL_PROFILES = Object.freeze( {
     fast: {
         id: `fast`,

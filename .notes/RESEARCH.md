@@ -5,6 +5,7 @@
 - Android share-target support requires an installed PWA; the manifest `share_target` alone is not enough in a normal browser tab.
 - Shared files require a `POST` share target with `multipart/form-data`; the service worker should intercept the POST, persist the file, then redirect with `303`.
 - Include both MIME types and dot-prefixed extensions for audio accepts. Avoid MIME parameters in `accept`.
+- Android file managers can share `.opus` files as `application/octet-stream` or `application/ogg`; include those MIME types in the manifest share-target accept list, then rely on extension-aware validation to reject non-audio generic binary shares.
 - Treat empty or generic shared-file MIME metadata leniently when the extension is a known WhatsApp/audio extension.
 - Keep manifest audio accepts and share-target validator extension lists in sync.
 - Whisper or Distil-Whisper through Transformers.js is the practical browser ASR baseline. Parakeet is the desired accuracy direction but needs a custom adapter/runtime validation before becoming default.

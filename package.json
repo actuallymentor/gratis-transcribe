@@ -1,6 +1,6 @@
 {
   "name": "transcribe-gratis",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Installable Android PWA for local audio message transcription.",
   "type": "module",
   "scripts": {

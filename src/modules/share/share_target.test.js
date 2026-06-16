@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { SHARE_TARGET_AUDIO_ACCEPT } from '../shared/constants.js'
 import { get_file_extension, is_probable_audio_file, validate_shared_audio_file } from './share_target.js'
 
 describe( `share target validation`, () => {
@@ -7,6 +8,20 @@ describe( `share target validation`, () => {
 
         expect( is_probable_audio_file( file ) ).toBe( true )
         expect( validate_shared_audio_file( file ) ).toEqual( { ok: true } )
+    } )
+
+    it( `accepts Android Ogg MIME metadata when the extension is known`, () => {
+        const file = { name: `voice.opus`, type: `application/ogg`, size: 4_096 }
+
+        expect( is_probable_audio_file( file ) ).toBe( true )
+        expect( validate_shared_audio_file( file ) ).toEqual( { ok: true } )
+    } )
+
+    it( `registers generic Android share MIME types for opus files`, () => {
+        expect( SHARE_TARGET_AUDIO_ACCEPT ).toContain( `audio/*` )
+        expect( SHARE_TARGET_AUDIO_ACCEPT ).toContain( `application/octet-stream` )
+        expect( SHARE_TARGET_AUDIO_ACCEPT ).toContain( `application/ogg` )
+        expect( SHARE_TARGET_AUDIO_ACCEPT ).toContain( `.opus` )
     } )
 
     it( `keeps manifest and validator FLAC support aligned`, () => {
