@@ -13,12 +13,13 @@ const describe_error = error => error?.message || `${ error }`
 const configure_transformers_environment = () => {
 
     env.useBrowserCache = true
-    env.useWasmCache = true
+    env.useWasmCache = false
     env.cacheKey = CACHE_KEY
     env.allowLocalModels = false
     env.allowRemoteModels = true
 
-    // Keep ONNX Runtime from dynamically importing its default jsDelivr module.
+    // Keep ONNX Runtime on app-local URLs; Transformers' WASM cache rewrites the
+    // factory module to a blob URL, which the production CSP intentionally blocks.
     env.backends.onnx.wasm.wasmPaths = get_onnx_runtime_asset_paths()
     env.backends.onnx.wasm.proxy = false
 

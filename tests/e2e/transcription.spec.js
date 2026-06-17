@@ -1,16 +1,34 @@
+import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { expect, test } from '@playwright/test'
 
 const current_dir = path.dirname( fileURLToPath( import.meta.url ) )
+const headers_path = path.resolve( current_dir, `../../public/_headers` )
 const speech_fixture_path = path.resolve( current_dir, `../../public/samples/browser-transcription-test.wav` )
 const expected_words = [ `hello`, `world`, `browser`, `transcription`, `test` ]
+const production_csp = fs.readFileSync( headers_path, `utf8` ).match( /Content-Security-Policy: (.+)/ )?.[ 1 ]
 
 const normalize_text = text => `${ text || `` }`.toLowerCase().replaceAll( /[^a-z0-9]+/g, ` ` ).trim()
+
+const apply_production_csp = async page => {
+    await page.route( `http://127.0.0.1:5173/**`, async route => {
+        const response = await route.fetch()
+        const headers = {
+            ...response.headers(),
+            'content-security-policy': production_csp
+        }
+
+        await route.fulfill( { response, headers } )
+    } )
+}
 
 test( `loads the real speech model and transcribes real audio`, async ( { page } ) => {
     test.setTimeout( 600_000 )
 
+    expect( production_csp ).toContain( `script-src 'self' 'wasm-unsafe-eval'` )
+
+    await apply_production_csp( page )
     await page.goto( `/` )
 
     await page.getByRole( `link`, { name: `Settings` } ).click()

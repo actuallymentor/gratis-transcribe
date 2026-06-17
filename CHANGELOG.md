@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.1] - 2026-06-17
+
+### Fixed
+
+- Keep ASR backend startup compatible with the production CSP.
+
 ## [0.2.0] - 2026-06-17
 
 ### Added
