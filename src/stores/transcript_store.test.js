@@ -25,6 +25,14 @@ vi.mock( '../modules/asr/asr_client.js', () => ( {
     } ) )
 } ) )
 
+vi.mock( '../modules/asr/asr_support.js', () => ( {
+    format_asr_support_error: vi.fn( () => `Unsupported browser.` ),
+    get_browser_asr_support: vi.fn( async () => ( {
+        supported: true,
+        missing_required_checks: []
+    } ) )
+} ) )
+
 vi.mock( '../modules/model/model_cache.js', () => ( {
     get_selected_model_profile: vi.fn( async () => ( {
         model_id: `mock-whisper`,

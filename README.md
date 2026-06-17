@@ -2,6 +2,8 @@
 
 Installable Android PWA for local audio message transcription. The app receives shared audio files, stores them locally, runs browser-side Whisper transcription, and keeps transcripts on device.
 
+The model panel checks browser runtime support before setup, including WebGPU acceleration, WASM fallback support, local storage, model caching, and audio decode APIs.
+
 ## Local Development
 
 ```bash
@@ -18,6 +20,7 @@ npm run lint:check
 npm test
 npm run build
 npm run test:e2e
+npm run test:e2e:real
 ```
 
 ## Deployment

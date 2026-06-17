@@ -113,6 +113,7 @@ export function HomePage() {
             profile={ model.profile }
             progress={ model.setup_progress }
             status={ model.setup_status }
+            support={ model.support }
             on_clear={ model.clear_models }
             on_download={ download_model }
         />

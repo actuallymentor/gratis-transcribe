@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { log } from 'mentie'
 import { cancel_asr_work, load_asr_model, transcribe_audio } from '../modules/asr/asr_client.js'
+import { format_asr_support_error, get_browser_asr_support } from '../modules/asr/asr_support.js'
 import { prepare_audio_file } from '../modules/audio/decode_audio.js'
 import { get_selected_model_profile } from '../modules/model/model_cache.js'
 import { clear_share_with_transcript, load_share_with_transcript, mark_share_status, save_manual_audio_file } from '../modules/share/share_db.js'
@@ -78,6 +79,11 @@ export const use_transcript_store = create( ( set, get ) => ( {
                 error: ``,
                 progress: { phase: `preparing`, percent: 5, label: `Preparing audio` }
             } )
+
+            const support = await get_browser_asr_support()
+
+            if( !is_current_run() ) return null
+            if( !support.supported ) throw new Error( format_asr_support_error( support ) )
 
             const [ delete_audio_after_transcription, profile ] = await Promise.all( [
                 get_setting( SETTING_KEYS.delete_audio_after_transcription, true ),

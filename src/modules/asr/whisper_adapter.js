@@ -1,6 +1,7 @@
 import { env, pipeline } from '@huggingface/transformers'
 import { log } from 'mentie'
 import { CACHE_KEY, SAMPLE_RATE, WHISPER_CHUNK_LENGTH_S, WHISPER_STRIDE_LENGTH_S } from '../shared/constants.js'
+import { get_webgpu_support } from './asr_support.js'
 import { get_onnx_runtime_asset_paths } from './onnx_runtime_assets.js'
 
 let transcriber = null
@@ -23,7 +24,13 @@ const configure_transformers_environment = () => {
 
 }
 
-const supports_webgpu = () => typeof navigator !== `undefined` && Boolean( navigator.gpu )
+const get_preferred_device = async () => {
+
+    const webgpu = await get_webgpu_support()
+
+    return webgpu.supported ? `webgpu` : `wasm`
+
+}
 
 const normalize_segments = chunks => ( chunks || [] ).map( chunk => {
 
@@ -64,7 +71,7 @@ export const create_whisper_adapter = () => {
 
             loaded_profile = profile
 
-            const preferred_device = supports_webgpu() ? `webgpu` : `wasm`
+            const preferred_device = await get_preferred_device()
             const shared_options = {
                 dtype: profile.dtype,
                 revision: profile.revision,

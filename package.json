@@ -1,6 +1,6 @@
 {
   "name": "transcribe-gratis",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Installable Android PWA for local audio message transcription.",
   "type": "module",
   "scripts": {
@@ -12,6 +12,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "test:e2e:real": "playwright test tests/e2e/transcription.spec.js",
     "assets": "node scripts/generate_assets.js",
     "prepare": "husky"
   },

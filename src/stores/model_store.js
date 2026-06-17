@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { log } from 'mentie'
 import { load_asr_model, warm_asr_model } from '../modules/asr/asr_client.js'
+import { format_asr_support_error, get_browser_asr_support } from '../modules/asr/asr_support.js'
 import { choose_best_model_profile, clear_model_caches, get_offline_readiness, get_selected_model_profile, mark_model_offline_ready, request_persistent_storage, set_selected_model_profile } from '../modules/model/model_cache.js'
 import { MODEL_PROFILES } from '../modules/shared/constants.js'
 
@@ -20,19 +21,29 @@ export const use_model_store = create( ( set, get ) => ( {
     setup_progress: 0,
     backend: ``,
     error: ``,
+    support: null,
 
     initialize: async () => {
-        const [ profile, readiness ] = await Promise.all( [
+        const [ profile, readiness, support ] = await Promise.all( [
             get_selected_model_profile(),
-            get_offline_readiness()
+            get_offline_readiness(),
+            get_browser_asr_support()
         ] )
 
         set( {
             profile,
             readiness,
+            support,
             backend: readiness?.backend || ``,
             setup_status: readiness?.ready ? `ready` : `missing`
         } )
+    },
+
+    refresh_support: async () => {
+        const support = await get_browser_asr_support()
+        set( { support } )
+
+        return support
     },
 
     choose_best_profile: async () => {
@@ -51,6 +62,10 @@ export const use_model_store = create( ( set, get ) => ( {
 
         try {
             set( { setup_status: `downloading`, setup_progress: 0, error: `` } )
+
+            const support = await get().refresh_support()
+
+            if( !support.supported ) throw new Error( format_asr_support_error( support ) )
 
             await request_persistent_storage()
 

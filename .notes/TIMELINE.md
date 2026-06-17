@@ -11,3 +11,5 @@
 - 2026-06-16: Restored prompt-based service-worker update activation with a `SKIP_WAITING` message handler and kept the web manifest precached offline.
 - 2026-06-16: Fixed browser model-download backend failures by self-hosting ONNX Runtime Web WASM assets, wiring Transformers.js `wasmPaths` to local Vite URLs, and caching the emitted `.mjs` runtime module.
 - 2026-06-16: Added generic binary and Ogg application MIME entries to the share-target manifest accept list so Android file managers can show the PWA for `.opus` shares.
+- 2026-06-17: Added browser ASR runtime support diagnostics, early unsupported-browser errors, WebGPU adapter probing before backend selection, and Playwright e2e coverage that loads the real Whisper Base model and transcribes a spoken WAV fixture.
+- 2026-06-17: Bumped the app to `0.2.0` and documented the runtime diagnostics plus real-model e2e command.
