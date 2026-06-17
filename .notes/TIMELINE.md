@@ -16,3 +16,4 @@
 - 2026-06-17: Applied post-commit review refinements to skip optional WebGPU probing during transcription preflight and cover unsupported-browser store gates.
 - 2026-06-17: Fixed production model backend startup under strict CSP by disabling Transformers.js WASM blob-module caching and applying the production CSP in the real transcription e2e test.
 - 2026-06-17: Added a Settings `Update app` command that unregisters service workers, clears app-shell/runtime caches, reloads the app, and documents the Android WebAPK share-target caveat.
+- 2026-06-17: Added an online reachability probe before destructive app-shell refresh so offline installed PWAs keep their cached shell.

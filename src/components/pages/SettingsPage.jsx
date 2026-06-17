@@ -47,6 +47,7 @@ export function SettingsPage() {
 
     const model = use_model_store()
     const [ delete_audio, set_delete_audio ] = useState( true )
+    const [ is_updating_app, set_is_updating_app ] = useState( false )
 
     useEffect( () => {
         model.initialize()
@@ -67,12 +68,18 @@ export function SettingsPage() {
     }
 
     const update_app = async () => {
+        if( is_updating_app ) return
+
+        set_is_updating_app( true )
         const toast_id = toast.loading( `Updating app` )
 
         try {
             await force_app_update()
+            toast.dismiss( toast_id )
         } catch ( error ) {
             toast.error( error.message, { id: toast_id } )
+        } finally {
+            set_is_updating_app( false )
         }
     }
 
@@ -110,7 +117,7 @@ export function SettingsPage() {
 
         <Section>
             <h2>App</h2>
-            <Button icon={ RefreshCw } onClick={ update_app }>Update app</Button>
+            <Button disabled={ is_updating_app } icon={ RefreshCw } onClick={ update_app }>Update app</Button>
         </Section>
 
         <Section>
