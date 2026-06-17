@@ -95,6 +95,21 @@ describe( `force app update`, () => {
         expect( scope.location.reload ).not.toHaveBeenCalled()
     } )
 
+    it( `refuses to delete the app shell when the update probe cannot reach the origin`, async () => {
+        const scope = create_scope()
+        scope.fetch.mockRejectedValueOnce( new TypeError( `Failed to fetch` ) )
+
+        await expect( force_app_update( scope ) ).rejects.toThrow( APP_UPDATE_OFFLINE_MESSAGE )
+
+        expect( scope.fetch ).toHaveBeenCalledWith(
+            expect.stringContaining( `/__app_update_probe__` ),
+            { cache: `no-store`, credentials: `same-origin` }
+        )
+        expect( scope.navigator.serviceWorker.getRegistrations ).not.toHaveBeenCalled()
+        expect( scope.caches.delete ).not.toHaveBeenCalled()
+        expect( scope.location.reload ).not.toHaveBeenCalled()
+    } )
+
     it( `refuses to update when reload is unavailable`, async () => {
         const scope = create_scope()
         delete scope.location.reload

@@ -1,6 +1,5 @@
 const app_cache_patterns = [
     /^workbox-/,
-    /^precache-/,
     /^transcribe-gratis-assets-/,
     /^transcribe-gratis-wasm-/
 ]
@@ -13,6 +12,8 @@ const is_app_update_cache = cache_name => app_cache_patterns.some( pattern => pa
 const verify_app_update_connection = async ( scope = globalThis ) => {
 
     if( scope.navigator?.onLine === false ) throw new Error( APP_UPDATE_OFFLINE_MESSAGE )
+
+    // Real installed PWAs have both; non-browser callers fall back to the onLine guard.
     if( !scope.fetch || !scope.location?.origin || scope.location.origin === `null` ) return
 
     const probe_url = `${ scope.location.origin }/__app_update_probe__?t=${ Date.now() }`

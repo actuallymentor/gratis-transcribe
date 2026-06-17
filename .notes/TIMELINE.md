@@ -17,3 +17,4 @@
 - 2026-06-17: Fixed production model backend startup under strict CSP by disabling Transformers.js WASM blob-module caching and applying the production CSP in the real transcription e2e test.
 - 2026-06-17: Added a Settings `Update app` command that unregisters service workers, clears app-shell/runtime caches, reloads the app, and documents the Android WebAPK share-target caveat.
 - 2026-06-17: Added an online reachability probe before destructive app-shell refresh so offline installed PWAs keep their cached shell.
+- 2026-06-17: Confirmed production CSP permits the same-origin app-update probe and covered rejected probe fetches in unit tests.
