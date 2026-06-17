@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.0] - 2026-06-17
+
+### Added
+
+- Add a Settings command to force-refresh the installed PWA app shell.
+
 ## [0.2.1] - 2026-06-17
 
 ### Fixed

@@ -8,6 +8,13 @@ test( `home page renders the transcription workspace`, async ( { page } ) => {
     await expect( page.getByRole( `button`, { name: `Download speech model` } ).first() ).toBeVisible()
 } )
 
+test( `settings exposes the app update command`, async ( { page } ) => {
+    await page.goto( `/settings` )
+
+    await expect( page.getByRole( `heading`, { name: `Settings` } ) ).toBeVisible()
+    await expect( page.getByRole( `button`, { name: `Update app` } ) ).toBeVisible()
+} )
+
 test( `shared URL loads from the app shell while offline`, async ( { context, page } ) => {
     await page.goto( `/` )
     await page.waitForFunction( async () => {

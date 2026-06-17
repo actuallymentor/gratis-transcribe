@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
-import { ArrowLeft, Database, Trash2 } from 'lucide-react'
+import { ArrowLeft, Database, RefreshCw, Trash2 } from 'lucide-react'
 import styled from 'styled-components'
 import toast from 'react-hot-toast'
 import { Button } from '../atoms/Button.jsx'
 import { StatusBadge } from '../atoms/StatusBadge.jsx'
 import { MODEL_PROFILES, SETTING_KEYS } from '../../modules/shared/constants.js'
 import { clear_content_storage, get_setting, save_setting } from '../../modules/storage/app_db.js'
+import { force_app_update } from '../../modules/pwa/force_app_update.js'
 import { use_model_store } from '../../stores/model_store.js'
 
 const Layout = styled.main`
@@ -65,6 +66,16 @@ export function SettingsPage() {
         toast.success( `Stored audio and transcripts cleared` )
     }
 
+    const update_app = async () => {
+        const toast_id = toast.loading( `Updating app` )
+
+        try {
+            await force_app_update()
+        } catch ( error ) {
+            toast.error( error.message, { id: toast_id } )
+        }
+    }
+
     return <Layout>
         <Button as={ Link } to="/" icon={ ArrowLeft }>Back</Button>
 
@@ -95,6 +106,11 @@ export function SettingsPage() {
                 <input checked={ delete_audio } onChange={ toggle_delete_audio } type="checkbox" />
                 <span>Delete source audio after transcription</span>
             </ToggleRow>
+        </Section>
+
+        <Section>
+            <h2>App</h2>
+            <Button icon={ RefreshCw } onClick={ update_app }>Update app</Button>
         </Section>
 
         <Section>
