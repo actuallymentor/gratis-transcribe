@@ -75,9 +75,47 @@ describe( `force app update`, () => {
         expect( scope.location.reload ).toHaveBeenCalledTimes( 1 )
     } )
 
+    it( `treats non-OK probe responses as reachable origin responses`, async () => {
+        const scope = create_scope()
+        scope.fetch.mockResolvedValueOnce( { ok: false, status: 404 } )
+
+        await force_app_update( scope )
+
+        expect( scope.location.reload ).toHaveBeenCalledTimes( 1 )
+    } )
+
     it( `reloads even when service workers are unavailable`, async () => {
         const scope = create_scope()
         delete scope.navigator.serviceWorker
+
+        await force_app_update( scope )
+
+        expect( scope.location.reload ).toHaveBeenCalledTimes( 1 )
+    } )
+
+    it( `reloads after a best-effort cache cleanup failure`, async () => {
+        const scope = create_scope()
+        scope.caches.delete.mockRejectedValueOnce( new Error( `Cache is locked` ) )
+
+        await force_app_update( scope )
+
+        expect( scope.registrations[ 0 ].unregister ).toHaveBeenCalledTimes( 1 )
+        expect( scope.location.reload ).toHaveBeenCalledTimes( 1 )
+    } )
+
+    it( `reloads after a best-effort cache listing failure`, async () => {
+        const scope = create_scope()
+        scope.caches.keys.mockRejectedValueOnce( new Error( `Cache API failed` ) )
+
+        await force_app_update( scope )
+
+        expect( scope.registrations[ 0 ].unregister ).toHaveBeenCalledTimes( 1 )
+        expect( scope.location.reload ).toHaveBeenCalledTimes( 1 )
+    } )
+
+    it( `falls back to the onLine guard when a probe cannot run`, async () => {
+        const scope = create_scope()
+        delete scope.fetch
 
         await force_app_update( scope )
 

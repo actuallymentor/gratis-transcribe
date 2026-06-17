@@ -38,10 +38,9 @@ export const clear_app_update_caches = async ( scope = globalThis ) => {
 
     const cache_names = await scope.caches.keys()
     const app_cache_names = cache_names.filter( is_app_update_cache )
+    const delete_results = await Promise.allSettled( app_cache_names.map( cache_name => scope.caches.delete( cache_name ) ) )
 
-    await Promise.all( app_cache_names.map( cache_name => scope.caches.delete( cache_name ) ) )
-
-    return app_cache_names
+    return app_cache_names.filter( ( _cache_name, index ) => delete_results[ index ].status === `fulfilled` )
 
 }
 
@@ -61,8 +60,8 @@ export const force_app_update = async ( scope = globalThis ) => {
     const registrations = await scope.navigator?.serviceWorker?.getRegistrations?.() || []
 
     // This is deliberately stronger than the normal SKIP_WAITING update banner.
-    await Promise.all( registrations.map( registration => registration.unregister() ) )
-    await clear_app_update_caches( scope )
+    await Promise.allSettled( registrations.map( registration => registration.unregister() ) )
+    await clear_app_update_caches( scope ).catch( () => [] )
 
     reload.call( scope.location )
 
