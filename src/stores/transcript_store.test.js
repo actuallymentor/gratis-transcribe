@@ -4,6 +4,7 @@ import { prepare_audio_file } from '../modules/audio/decode_audio.js'
 import { load_incoming_share } from '../modules/storage/app_db.js'
 import { DB_NAME, SHARE_STATUS } from '../modules/shared/constants.js'
 import { cancel_asr_work, transcribe_audio } from '../modules/asr/asr_client.js'
+import { get_browser_asr_support } from '../modules/asr/asr_support.js'
 import { use_transcript_store } from './transcript_store.js'
 
 let resolve_prepared_audio
@@ -100,5 +101,21 @@ describe( `transcript store`, () => {
 
         expect( second_processing ).toBeNull()
         expect( prepare_audio_file ).toHaveBeenCalledTimes( 1 )
+    } )
+
+    it( `fails before audio preparation when browser support is missing`, async () => {
+        get_browser_asr_support.mockResolvedValueOnce( {
+            supported: false,
+            missing_required_checks: [ { label: `Cache API` } ]
+        } )
+
+        const file = new File( [ new Uint8Array( [ 1, 2, 3, 4 ] ) ], `voice.ogg`, { type: `audio/ogg` } )
+
+        await use_transcript_store.getState().save_manual_file( file )
+        await use_transcript_store.getState().process_current_share()
+
+        expect( prepare_audio_file ).not.toHaveBeenCalled()
+        expect( transcribe_audio ).not.toHaveBeenCalled()
+        expect( use_transcript_store.getState().error ).toBe( `Unsupported browser.` )
     } )
 } )

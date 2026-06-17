@@ -53,6 +53,16 @@ describe( `ASR browser support checks`, () => {
         } )
     } )
 
+    it( `skips optional WebGPU probing when only required checks are needed`, async () => {
+        const scope = create_scope()
+        const support = await get_browser_asr_support( scope, { check_webgpu: false } )
+
+        expect( support.supported ).toBe( true )
+        expect( support.preferred_backend ).toBe( `wasm` )
+        expect( scope.navigator.gpu.requestAdapter ).not.toHaveBeenCalled()
+        expect( support.checks.some( ( { id } ) => id === `webgpu` ) ).toBe( false )
+    } )
+
     it( `formats missing required capabilities`, async () => {
         const support = await get_browser_asr_support( create_scope( {
             WebAssembly: {

@@ -83,16 +83,18 @@ export const get_webgpu_support = async ( scope = globalThis ) => {
 /**
  * Collects browser support required for local ASR model loading.
  * @param {Object} scope
+ * @param {Object} options
+ * @param {boolean} options.check_webgpu
  * @returns {Promise<Object>}
  */
-export const get_browser_asr_support = async ( scope = globalThis ) => {
+export const get_browser_asr_support = async ( scope = globalThis, { check_webgpu = true } = {} ) => {
 
-    const webgpu = await get_webgpu_support( scope )
+    const webgpu = check_webgpu ? await get_webgpu_support( scope ) : null
     const secure_context = Boolean( scope.isSecureContext || is_localhost( scope ) )
     const has_wasm = typeof scope.WebAssembly === `object` && has_function( scope.WebAssembly.instantiate )
     const has_audio_decoder = has_function( scope.OfflineAudioContext )
 
-    const checks = [
+    const required_checks = [
         create_check( {
             id: `secure_context`,
             label: `Secure context`,
@@ -141,22 +143,30 @@ export const get_browser_asr_support = async ( scope = globalThis ) => {
             ok: has_audio_decoder,
             available: `Audio files can be decoded before transcription.`,
             unavailable: `This browser cannot decode uploaded audio files.`
-        } ),
+        } )
+    ]
+
+    const optional_checks = check_webgpu ? [
         create_check( {
             id: `webgpu`,
-            label: webgpu.label,
-            ok: webgpu.supported,
+            label: webgpu?.label,
+            ok: webgpu?.supported,
             required: false,
-            available: webgpu.detail,
-            unavailable: webgpu.detail
+            available: webgpu?.detail,
+            unavailable: webgpu?.detail
         } )
+    ] : []
+
+    const checks = [
+        ...required_checks,
+        ...optional_checks
     ]
 
     const missing_required_checks = checks.filter( ( { ok, required } ) => required && !ok )
 
     return {
         supported: missing_required_checks.length === 0,
-        preferred_backend: webgpu.supported ? `webgpu` : `wasm`,
+        preferred_backend: webgpu?.supported ? `webgpu` : `wasm`,
         checks,
         missing_required_checks
     }

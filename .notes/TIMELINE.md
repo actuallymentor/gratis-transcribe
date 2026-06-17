@@ -13,3 +13,4 @@
 - 2026-06-16: Added generic binary and Ogg application MIME entries to the share-target manifest accept list so Android file managers can show the PWA for `.opus` shares.
 - 2026-06-17: Added browser ASR runtime support diagnostics, early unsupported-browser errors, WebGPU adapter probing before backend selection, and Playwright e2e coverage that loads the real Whisper Base model and transcribes a spoken WAV fixture.
 - 2026-06-17: Bumped the app to `0.2.0` and documented the runtime diagnostics plus real-model e2e command.
+- 2026-06-17: Applied post-commit review refinements to skip optional WebGPU probing during transcription preflight and cover unsupported-browser store gates.

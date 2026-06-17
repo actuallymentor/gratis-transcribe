@@ -80,7 +80,7 @@ export const use_transcript_store = create( ( set, get ) => ( {
                 progress: { phase: `preparing`, percent: 5, label: `Preparing audio` }
             } )
 
-            const support = await get_browser_asr_support()
+            const support = await get_browser_asr_support( globalThis, { check_webgpu: false } )
 
             if( !is_current_run() ) return null
             if( !support.supported ) throw new Error( format_asr_support_error( support ) )

@@ -23,6 +23,8 @@ npm run test:e2e
 npm run test:e2e:real
 ```
 
+`npm run test:e2e` includes the real browser model load and transcription path. Use `npm run test:e2e:real` to run only that network-dependent check.
+
 ## Deployment
 
 Push to `main` deploys `dist` to Cloudflare Pages with GitHub Actions. Required repository secrets:

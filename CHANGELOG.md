@@ -6,12 +6,14 @@
 
 - Add browser ASR runtime support diagnostics before model setup.
 - Add real Whisper Base Playwright transcription coverage with spoken audio.
+- Add store coverage for unsupported-browser model setup and transcription gates.
 - Add a focused `npm run test:e2e:real` command.
 
 ### Changed
 
 - Probe WebGPU adapters before choosing the model backend.
 - Fail model setup and transcription early when required browser APIs are missing.
+- Skip optional WebGPU probing on the transcription hot path.
 
 ## [0.1.2] - 2026-06-16
 
